@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entra ID Role Management</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --azure-blue: #0078d4;
+      --azure-dark: #106ebe;
+      --azure-light: #f0f6ff;
+      --azure-border: #e1e1e1;
+    }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f8f9fa;
+      color: #252525;
+      margin: 0;
+      padding: 0;
+    }
+    .azure-header {
+      background-color: var(--azure-blue);
+      color: white;
+      padding: 12px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .azure-content {
+      padding: 20px;
+    }
+    .azure-card {
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      background-color: white;
+      border: 1px solid var(--azure-border);
+    }
+    .azure-card-header {
+      padding: 12px 16px;
+      background-color: var(--azure-light);
+      border-bottom: 1px solid var(--azure-border);
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .azure-card-body {
+      padding: 16px;
+    }
+    .azure-btn {
+      background-color: var(--azure-blue);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 13px;
+      margin: 2px 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .azure-btn:hover {
+      background-color: var(--azure-dark);
+      color: white;
+    }
+    .azure-btn:disabled {
+      background-color: #f0f0f0;
+      color: #999;
+      cursor: not-allowed;
+      border: 1px solid #ddd;
+    }
+    .azure-btn-outline {
+      background-color: transparent;
+      color: var(--azure-blue);
+      border: 1px solid var(--azure-blue);
+    }
+    .azure-btn-outline:hover:not(:disabled) {
+      background-color: var(--azure-light);
+      color: var(--azure-blue);
+    }
+    .azure-btn-outline:disabled {
+      border-color: #ccc;
+      color: #999;
+    }
+    .btn-danger {
+      background-color: #dc3545;
+    }
+    .btn-danger:hover {
+      background-color: #bd2130;
+    }
+    .azure-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .azure-table th, .azure-table td {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-wrap: break-word;
+    }
+    .azure-table th {
+      background-color: var(--azure-light);
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--azure-border);
+    }
+    .azure-table td {
+      padding: 10px;
+      border-bottom: 1px solid var (--azure-border);
+    }
+    .azure-table tr {
+      border-bottom: 1px solid var(--azure-border);
+    }
+    .azure-table tr:hover {
+      background-color: #f5f5f5;
+    }
+    .user-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    .user-list li {
+      padding: 8px 5px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .user-list li:last-child {
+      border-bottom: none;
+    }
+    .badge {
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: normal;
+    }
+    .badge-user-count {
+      background-color: var(--azure-blue);
+      color: white;
+    }
+    .btn-group {
+      display: flex;
+      gap: 5px;
+    }
+    .btn-group-compact {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: flex-start;
+    }
+    .compact-section {
+      margin-bottom: 8px;
+    }
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+    }
+    .spinner-border {
+      width: 3rem;
+      height: 3rem;
+      color: var(--azure-blue);
+    }
+    .app-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0;
+      color: var(--azure-blue);
+    }
+    .app-description {
+      font-size: 0.9rem;
+      color: #666;
+      margin: 0.5rem 0 0;
+      max-width: 800px;
+      margin-bottom: 0;
+    }
+    .banner {
+      background-color: var(--azure-light);
+      padding: 2rem 0;
+      text-align: center;
+      border-bottom: 1px solid var(--azure-border);
+      margin-bottom: 2rem;
+    }
+    .principal-list-container {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid var(--azure-border);
+      border-radius: 4px;
+      padding: 10px;
+    }
+    .assignment-badge {
+      font-size: 11px;
+      padding: 2px 6px;
+      margin-left: 5px;
+      border-radius: 10px;
+    }
+    .badge-eligible {
+      background-color: #0078d4;
+      color: white;
+    }
+    .badge-active {
+      background-color: #107c10;
+      color: white;
+    }
+    .truncate-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      display: inline-block;
+    }
+    .group-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .group-status-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .group-status-badge {
+      min-width: 65px;
+      text-align: center;
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .d-flex.flex-column.gap-2 {
+      gap: 8px !important;
+    }
+    .app-header {
+      background-color: var(--azure-light);
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--azure-border);
+      margin-bottom: 1.5rem;
+    }
+    .app-features {
+      list-style: disc;
+      padding-left: 20px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .app-features li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-header">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="app-title">Entra ID Permission Management</h1>
+          <p class="app-description">
+            Manage Microsoft Entra ID role assignments with this comprehensive tool. Key functions include:
+          </p>
+          <ul class="app-features">
+            <li>Viewing all role assignments with user, group, and service principal details</li>
+            <li>Creating security groups with Active or Eligible (PIM) role assignments</li>
+            <li>Transferring users from direct role assignments to group-based access</li>
+            <li>Removing non-existent identity assignments with cleanup tools</li>
+            <li>Implementing best practices with PIM adoption and group-based management</li>
+          </ul>
+          <div class="mt-3 d-flex gap-3 flex-wrap">
+            <div class="status-indicator">
+              <i class="bi bi-shield-fill-check text-success me-1"></i>
+              <span class="small">Active assignments</span>
+            </div>
+            <div class="status-indicator">
+              <i class="bi bi-shield-lock text-primary me-1"></i>
+              <span class="small">Eligible assignments (PIM)</span>
+            </div>
+            <div class="status-indicator">
+              <i class="bi bi-people-fill me-1"></i>
+              <span class="small">Group-based access</span>
+            </div>
+            <div class="status-indicator">
+              <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+              <span class="small">Cleanup tools</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="azure-content container">
+    <!-- Getting Started Card - Moved to the top -->
+    <div class="azure-card mb-3">
+      <div class="azure-card-header">
+        <i class="bi bi-info-circle me-2"></i>Getting Started
+      </div>
+      <div class="azure-card-body">
+        <p>This application helps you implement Azure best practices for Entra ID RBAC management:</p>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="mb-3">
+              <h6><i class="bi bi-shield-fill me-2"></i>Role Visibility</h6>
+              <p class="small text-muted">Monitor active and eligible assignments across your organization and identify unused roles.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="mb-3">
+              <h6><i class="bi bi-people me-2"></i>Group-Based Access</h6>
+              <p class="small text-muted">Follow best practices by transitioning from direct user assignments to group-based access control.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="mb-3">
+              <h6><i class="bi bi-trash me-2"></i>Cleanup Tools</h6>
+              <p class="small text-muted">Identify and remove non-existent identities and stale assignments to maintain security.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Cards Section -->
+    <div class="row mb-3" id="stats-container" style="display: none;">
+      <div class="col mb-2">
+        <div class="azure-card h-100">
+          <div class="azure-card-header py-2">
+            <i class="bi bi-shield-fill me-2"></i>Used Roles
+          </div>
+          <div class="azure-card-body text-center py-2">
+            <h4 id="stat-used-roles" class="mb-0">0</h4>
+            <small class="text-muted">Roles with assignments</small>
+          </div>
+        </div>
+      </div>
+      <div class="col mb-2">
+        <div class="azure-card h-100">
+          <div class="azure-card-header py-2">
+            <i class="bi bi-shield me-2"></i>Unused Roles
+          </div>
+          <div class="azure-card-body text-center py-2">
+            <h4 id="stat-unused-roles" class="mb-0">0</h4>
+            <small class="text-muted">Roles without assignments</small>
+            <div class="mt-1">
+              <button id="show-unused-roles-btn" class="azure-btn azure-btn-outline btn-sm">View</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col mb-2">
+        <div class="azure-card h-100">
+          <div class="azure-card-header py-2">
+            <i class="bi bi-person-lock me-2"></i>Privileged Users
+          </div>
+          <div class="azure-card-body text-center py-2">
+            <h4 id="stat-privileged-users" class="mb-0">0</h4>
+            <small class="text-muted">Users with role assignments</small>
+          </div>
+        </div>
+      </div>
+      <div class="col mb-2">
+        <div class="azure-card h-100">
+          <div class="azure-card-header py-2">
+            <i class="bi bi-check-circle me-2"></i>PIM Adoption
+          </div>
+          <div class="azure-card-body text-center py-2">
+            <h4 id="stat-pim-percentage" class="mb-0">0%</h4>
+            <small class="text-muted">Roles using eligible assignments</small>
+          </div>
+        </div>
+      </div>
+      <div class="col mb-2">
+        <div class="azure-card h-100">
+          <div class="azure-card-header py-2 bg-warning text-dark">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Removed Identities
+          </div>
+          <div class="azure-card-body text-center py-2">
+            <h4 id="stat-removed-identities" class="mb-0">0</h4>
+            <small class="text-muted">Non-existent identity assignments</small>
+            <div class="mt-1" id="cleanup-all-btn-container">
+              <button id="cleanup-all-btn" class="azure-btn btn-danger btn-sm" style="display: none;">
+                <i class="bi bi-trash"></i> Clean Up All
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Existing Role Assignments Card -->
+    <div class="azure-card">
+      <div class="azure-card-header d-flex justify-content-between align-items-center">
+        <span>Role Assignments</span>
+        <div class="d-flex align-items-center">
+          <button id="refresh-groups-btn" class="azure-btn azure-btn-outline btn-sm me-3">
+            <i class="bi bi-arrow-clockwise"></i> Refresh Groups
+          </button>
+          <div class="form-check form-switch me-3">
+            <input class="form-check-input" type="checkbox" id="show-all-roles-switch">
+            <label class="form-check-label" for="show-all-roles-switch">Show all roles</label>
+          </div>
+          <span id="role-count-badge" class="badge badge-user-count">Loading...</span>
+        </div>
+      </div>
+      <div class="azure-card-body">
+        <div id="loading-container" class="loading-container">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <div class="mt-3">Loading role assignment data...</div>
+        </div>
+        
+        <div id="roles-container" class="table-responsive" style="display: none;">
+          <table class="azure-table">
+            <thead>
+              <tr>
+                <th width="22%">Role Name</th>
+                <th width="23%">Description</th>
+                <th width="30%">Users</th>
+                <th width="15%">Actions</th>
+                <th width="10%">Groups Status</th>
+              </tr>
+            </thead>
+            <tbody id="roles-table-body">
+              <!-- Table content will be populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Removed the Information section as it's redundant with the header and Getting Started section -->
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Global variables to store role data
+    let allRoles = {};
+    let showAllRoles = false;
+    let existingGroups = [];
+
+    // Update the fetchExistingGroups function to better handle the Microsoft Graph API requirements
+    async function fetchExistingGroups() {
+      try {
+        console.log('Fetching existing groups...');
+        // Instead of filtering on the server side, we'll fetch all groups with 'rbac' in the name
+        // and filter them in the browser
+        const res = await fetch('/api/existing-groups');
+        
+        if (!res.ok) {
+          console.error(`Failed to fetch groups: ${res.status} ${res.statusText}`);
+          throw new Error(`HTTP error: ${res.statusText}`);
+        }
+        
+        const data = await res.json();
+        console.log(`Fetched ${data.groups?.length || 0} existing groups`);
+        
+        // Return full group names in lowercase for easier comparison
+        return (data.groups || []).map(g => g.toLowerCase());
+      } catch (error) {
+        console.error('Error fetching existing groups:', error);
+        // Return empty array but don't fail the whole application
+        return [];
+      }
+    }
+    
+    // Improved helper function to check if a group exists for a role
+    function doesGroupExistForRole(roleDisplayName, groupType, existingGroups) {
+      // Convert parameters to lowercase for case-insensitive comparison
+      const roleName = roleDisplayName.toLowerCase();
+      const suffix = `rbac ${groupType.toLowerCase()}`;
+      
+      // More robust check for group existence
+      return existingGroups.some(group => {
+        const groupLower = group.toLowerCase();
+        
+        // Try exact match first (most accurate)
+        if (groupLower === `${roleName} ${suffix}`) {
+          return true;
+        }
+        
+        // Then try a more permissive check
+        if (groupLower.includes(roleName) && groupLower.includes(suffix)) {
+          // Make sure the role name comes before the suffix
+          const roleIndex = groupLower.indexOf(roleName);
+          const suffixIndex = groupLower.indexOf(suffix);
+          return (roleIndex !== -1 && suffixIndex !== -1 && roleIndex < suffixIndex);
+        }
+        
+        return false;
+      });
+    }
+
+    // Function to fetch roles data from the API
+    async function fetchRolesData() {
+      try {
+        const response = await fetch('/api/roles');
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}`);
+        }
+        const data = await response.json();
+        return data.roles;
+      } catch (error) {
+        console.error('Error fetching roles data:', error);
+        showError('Failed to load data. Please refresh the page or try again later.');
+        return null;
+      }
+    }
+    
+    // Function to show error message
+    function showError(message) {
+      const loadingContainer = document.getElementById('loading-container');
+      loadingContainer.innerHTML = `
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          ${message}
+        </div>
+      `;
+    }
+    
+    // Update the calculateStatistics function to better track removed identities
+    function calculateStatistics(roles) {
+      // Prepare stats objects
+      const stats = {
+        usedRoles: 0,
+        unusedRoles: 0,
+        privilegedUsers: new Set(),
+        rolesWithEligible: 0,
+        totalRolesWithAssignments: 0,
+        rolesWithRemovedIdentities: 0,
+        totalRemovedIdentities: 0,
+        groupAssignments: 0,
+        // Add structure to track roles with removed identities for cleanup
+        rolesWithRemovedIds: []
+      };
+      
+      // Process all roles
+      Object.entries(roles).forEach(([rid, info]) => {
+        // Skip metadata entry
+        if (rid === '_metadata') return;
+        
+        const hasUsers = info.users && info.users.length > 0;
+        const hasGroups = info.groups && info.groups.length > 0;
+        const hasServicePrincipals = info.servicePrincipals && info.servicePrincipals.length > 0;
+        const hasRemovedIdentities = info.removedIdentities && info.removedIdentities.length > 0;
+        const hasAssignments = hasUsers || hasGroups || hasServicePrincipals || hasRemovedIdentities;
+        
+        // Count used/unused roles
+        if (hasAssignments) {
+          stats.usedRoles++;
+          stats.totalRolesWithAssignments++;
+          
+          // Check if role has eligible assignments
+          const hasEligibleUsers = info.users && info.users.some(u => u.assignmentType === 'Eligible');
+          const hasEligibleGroups = info.groups && info.groups.some(g => g.assignmentType === 'Eligible');
+          const hasEligibleSPs = info.servicePrincipals && info.servicePrincipals.some(sp => sp.assignmentType === 'Eligible');
+          
+          if (hasEligibleUsers || hasEligibleGroups || hasEligibleSPs) {
+            stats.rolesWithEligible++;
+          }
+          
+          // Add users to the privileged users set
+          if (hasUsers) {
+            info.users.forEach(user => {
+              if (user.id) {
+                stats.privilegedUsers.add(user.id);
+              }
+            });
+          }
+          
+          // Count group assignments
+          if (hasGroups) {
+            stats.groupAssignments += info.groups.length;
+          }
+          
+          // Track roles with removed identities
+          if (hasRemovedIdentities) {
+            stats.rolesWithRemovedIdentities++;
+            stats.totalRemovedIdentities += info.removedIdentities.length;
+            
+            // Store the role ID for later cleanup
+            stats.rolesWithRemovedIds.push({
+              roleId: rid,
+              displayName: info.displayName,
+              removedCount: info.removedIdentities.length
+            });
+          }
+        } else {
+          stats.unusedRoles++;
+        }
+      });
+      
+      // Calculate PIM adoption percentage
+      const pimPercentage = stats.totalRolesWithAssignments > 0 
+        ? Math.round((stats.rolesWithEligible / stats.totalRolesWithAssignments) * 100) 
+        : 0;
+      
+      // Return the calculated stats
+      return {
+        usedRoles: stats.usedRoles,
+        unusedRoles: stats.unusedRoles,
+        privilegedUserCount: stats.privilegedUsers.size,
+        pimPercentage: pimPercentage,
+        rolesWithRemovedIdentities: stats.rolesWithRemovedIdentities,
+        totalRemovedIdentities: stats.totalRemovedIdentities,
+        groupAssignments: stats.groupAssignments,
+        rolesWithRemovedIds: stats.rolesWithRemovedIds
+      };
+    }
+    
+    // Update the updateStatistics function to include removed identities
+    function updateStatistics(stats) {
+      document.getElementById('stat-used-roles').textContent = stats.usedRoles;
+      document.getElementById('stat-unused-roles').textContent = stats.unusedRoles;
+      document.getElementById('stat-privileged-users').textContent = stats.privilegedUserCount;
+      document.getElementById('stat-pim-percentage').textContent = `${stats.pimPercentage}%`;
+      document.getElementById('stat-removed-identities').textContent = stats.totalRemovedIdentities;
+      
+      // Update cleanup all button visibility
+      const cleanupAllBtn = document.getElementById('cleanup-all-btn');
+      if (stats.totalRemovedIdentities > 0) {
+        cleanupAllBtn.style.display = 'inline-block';
+        cleanupAllBtn.textContent = `Clean Up All (${stats.totalRemovedIdentities})`;
+        
+        // Store the roles with removed identities for later use
+        cleanupAllBtn.dataset.rolesWithRemoved = JSON.stringify(stats.rolesWithRemovedIds);
+      } else {
+        cleanupAllBtn.style.display = 'none';
+      }
+      
+      // Show the stats container
+      document.getElementById('stats-container').style.display = 'flex';
+    }
+    
+    // Function to render roles table
+    function renderRolesTable(roles) {
+      const tableBody = document.getElementById('roles-table-body');
+      const roleCountBadge = document.getElementById('role-count-badge');
+      
+      // Calculate statistics
+      const stats = calculateStatistics(roles);
+      updateStatistics(stats);
+      
+      // Get list of role IDs to display
+      const displayRoleIds = Object.entries(roles)
+        .filter(([rid, info]) => {
+          if (rid === '_metadata') return false;
+          
+          const hasUsers = info.users && info.users.length > 0;
+          const hasGroups = info.groups && info.groups.length > 0;  // Include groups in the check
+          const hasServicePrincipals = info.servicePrincipals && info.servicePrincipals.length > 0;
+          const hasRemovedIdentities = info.removedIdentities && info.removedIdentities.length > 0;
+          
+          // If showing all roles, return true
+          // Otherwise, only show roles with assignments or removed identities
+          return showAllRoles || hasUsers || hasGroups || hasServicePrincipals || hasRemovedIdentities;
+        })
+        .map(([rid]) => rid);
+      
+      // Update role count badge
+      roleCountBadge.textContent = `${displayRoleIds.length} roles`;
+      
+      // Clear existing content
+      tableBody.innerHTML = '';
+      
+      if (displayRoleIds.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center py-4">
+              <p class="text-muted">No ${showAllRoles ? '' : 'used'} roles found</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      // Get PIM status from metadata if available
+      const pimEnabled = roles._metadata && roles._metadata.pimEnabled === true;
+      
+      // Add rows for each role to display
+      displayRoleIds.forEach((rid, index) => {
+        const info = roles[rid];
+        
+        // Count total principals (users + groups + service principals + removed identities)
+        const usersCount = info.users ? info.users.length : 0;
+        const groupsCount = info.groups ? info.groups.length : 0; // Add groups count
+        const spCount = info.servicePrincipals ? info.servicePrincipals.length : 0;
+        const removedCount = info.removedIdentities ? info.removedIdentities.length : 0;
+        const totalPrincipals = usersCount + groupsCount + spCount + removedCount;
+        
+        // Build the principals list with assignment status indicators
+        let principalsList = '';
+
+        if (totalPrincipals > 0) {
+          principalsList = `
+            <div class="d-flex justify-content-between mb-2">
+              <span>${totalPrincipals} principal${totalPrincipals !== 1 ? 's' : ''}</span>
+              <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" 
+                data-bs-target="#principalList-${index}" aria-expanded="false">
+                Show/Hide
+              </button>
+            </div>
+            <div class="collapse" id="principalList-${index}">
+              <div class="principal-list-container">
+          `;
+          
+          // Group users by assignment type
+          const activeUsers = info.users ? info.users.filter(u => u.assignmentType === 'Active') : [];
+          const eligibleUsers = info.users ? info.users.filter(u => u.assignmentType === 'Eligible') : [];
+          const otherUsers = info.users ? info.users.filter(u => !['Active', 'Eligible'].includes(u.assignmentType)) : [];
+          
+          // Group service principals by assignment type
+          const activeSPs = info.servicePrincipals ? info.servicePrincipals.filter(sp => sp.assignmentType === 'Active') : [];
+          const eligibleSPs = info.servicePrincipals ? info.servicePrincipals.filter(sp => sp.assignmentType === 'Eligible') : [];
+          const otherSPs = info.servicePrincipals ? info.servicePrincipals.filter(sp => !['Active', 'Eligible'].includes(sp.assignmentType)) : [];
+          
+          // Add active users section if any
+          if (activeUsers.length > 0) {
+            principalsList += `
+              <div class="mb-3">
+                <div class="mb-2 fw-bold text-success">
+                  <i class="bi bi-shield-fill-check me-1"></i>Active Users (${activeUsers.length})
+                </div>
+                <ul class="user-list mb-3">
+                  ${activeUsers.map(u => `
+                    <li class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <i class="bi bi-person"></i>
+                        <span class="truncate-text" title="${u.displayName}">${u.displayName}</span>
+                        <small class="text-muted truncate-text" title="${u.userPrincipalName || ''}">${u.userPrincipalName || ''}</small>
+                      </div>
+                      <button type="button"
+                              class="btn btn-sm btn-outline-danger remove-user-btn"
+                              data-role-id="${rid}"
+                              data-assignment-type="Active"
+                              data-user-id="${u.id}"
+                              title="Remove user">
+                        <i class="bi bi-x"></i>
+                      </button>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            `;
+          }
+          
+          // Add eligible users section if any
+          if (eligibleUsers.length > 0) {
+            principalsList += `
+              <div class="mb-3">
+                <div class="mb-2 fw-bold text-primary">
+                  <i class="bi bi-shield-lock me-1"></i>Eligible Users (${eligibleUsers.length})
+                </div>
+                <ul class="user-list mb-3">
+                  ${eligibleUsers.map(u => `
+                    <li class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <i class="bi bi-person"></i>
+                        <span class="truncate-text" title="${u.displayName}">${u.displayName}</span>
+                        <small class="text-muted truncate-text" title="${u.userPrincipalName || ''}">${u.userPrincipalName || ''}</small>
+                      </div>
+                      <button type="button"
+                              class="btn btn-sm btn-outline-danger remove-user-btn"
+                              data-role-id="${rid}"
+                              data-assignment-type="Eligible"
+                              data-user-id="${u.id}"
+                              title="Remove user">
+                        <i class="bi bi-x"></i>
+                      </button>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            `;
+          }
+          
+          // Add other users section if any (should be rare)
+          if (otherUsers.length > 0) {
+            principalsList += `
+              <div class="mb-3">
+                <div class="mb-2 fw-bold text-secondary">
+                  <i class="bi bi-shield me-1"></i>Other Users (${otherUsers.length})
+                </div>
+                <ul class="user-list mb-3">
+                  ${otherUsers.map(u => `
+                    <li>
+                      <i class="bi bi-person"></i> 
+                      <span class="truncate-text" title="${u.displayName}">${u.displayName}</span>
+                      <small class="text-muted truncate-text" title="${u.userPrincipalName || ''}">${u.userPrincipalName || ''}</small>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            `;
+          }
+          
+          // Similar sections for service principals
+          if (activeSPs.length > 0) {
+            principalsList += `
+              <div class="mb-3">
+                <div class="mb-2 fw-bold text-success">
+                  <i class="bi bi-shield-fill-check me-1"></i>Active Service Principals (${activeSPs.length})
+                </div>
+                <ul class="user-list mb-3">
+                  ${activeSPs.map(sp => `
+                    <li>
+                      <i class="bi bi-box"></i> 
+                      <span class="truncate-text" title="${sp.displayName}">${sp.displayName}</span>
+                      <small class="text-muted truncate-text" title="${sp.appId || ''}">${sp.appId || ''}</small>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            `;
+          }
+          
+          if (eligibleSPs.length > 0) {
+            principalsList += `
+              <div class="mb-3">
+                <div class="mb-2 fw-bold text-primary">
+                  <i class="bi bi-shield-lock me-1"></i>Eligible Service Principals (${eligibleSPs.length})
+                </div>
+                <ul class="user-list mb-3">
+                  ${eligibleSPs.map(sp => `
+                    <li>
+                      <i class="bi bi-box"></i> 
+                      <span class="truncate-text" title="${sp.displayName}">${sp.displayName}</span>
+                      <small class="text-muted truncate-text" title="${sp.appId || ''}">${sp.appId || ''}</small>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            `;
+          }
+          
+          // Add groups section
+          const activeGroups = info.groups ? info.groups.filter(g => g.assignmentType === 'Active') : [];
+          const eligibleGroups = info.groups ? info.groups.filter(g => g.assignmentType === 'Eligible') : [];
+          const otherGroups = info.groups ? info.groups.filter(g => !['Active', 'Eligible'].includes(g.assignmentType)) : [];
+          
+          // Add active groups section if any
+          if (activeGroups.length > 0) {
+            principalsList += `
+              <div class="mb-3">
+                <div class="mb-2 fw-bold text-success">
+                  <i class="bi bi-people-fill me-1"></i>Active Groups (${activeGroups.length})
+                </div>
+                <ul class="user-list mb-3">
+                  ${activeGroups.map(g => `
+                    <li class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <i class="bi bi-people"></i>
+                        <span class="truncate-text" title="${g.displayName}">${g.displayName}</span>
+                        <small class="text-muted truncate-text" title="${g.id || ''}">${g.id || ''}</small>
+                        
+                        <!-- Add group members section -->
+                        ${g.members && g.members.length > 0 ? 
+                          `<div class="ps-3 mt-2 border-start border-2">
+                            <div class="small text-muted mb-1">Group Members (${g.members.length}):</div>
+                            ${g.members.map(m => `
+                              <div class="small">
+                                <i class="bi bi-person-fill"></i> 
+                                ${m.displayName}
+                                <span class="text-muted">${m.userPrincipalName || ''}</span>
+                              </div>
+                            `).join('')}
+                          </div>` :
+                          `<div class="ps-3 mt-1 small text-muted">No members</div>`
+                        }
+                      </div>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            `;
+          }
+          
+          // Add eligible groups section if any
+          if (eligibleGroups.length > 0) {
+            principalsList += `
+              <div class="mb-3">
+                <div class="mb-2 fw-bold text-primary">
+                  <i class="bi bi-people me-1"></i>Eligible Groups (${eligibleGroups.length})
+                </div>
+                <ul class="user-list mb-3">
+                  ${eligibleGroups.map(g => `
+                    <li class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <i class="bi bi-people"></i>
+                        <span class="truncate-text" title="${g.displayName}">${g.displayName}</span>
+                        <small class="text-muted truncate-text" title="${g.id || ''}">${g.id || ''}</small>
+                        
+                        <!-- Add group members section -->
+                        ${g.members && g.members.length > 0 ? 
+                          `<div class="ps-3 mt-2 border-start border-2">
+                            <div class="small text-muted mb-1">Group Members (${g.members.length}):</div>
+                            ${g.members.map(m => `
+                              <div class="small">
+                                <i class="bi bi-person-fill"></i> 
+                                ${m.displayName}
+                                <span class="text-muted">${m.userPrincipalName || ''}</span>
+                              </div>
+                            `).join('')}
+                          </div>` :
+                          `<div class="ps-3 mt-1 small text-muted">No members</div>`
+                        }
+                      </div>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            `;
+          }
+          
+          // Add other groups section if any
+          if (otherGroups.length > 0) {
+            principalsList += `
+              <div class="mb-3">
+                <div class="mb-2 fw-bold text-secondary">
+                  <i class="bi bi-people me-1"></i>Other Groups (${otherGroups.length})
+                </div>
+                <ul class="user-list mb-3">
+                  ${otherGroups.map(g => `
+                    <li>
+                      <i class="bi bi-people"></i> 
+                      <span class="truncate-text" title="${g.displayName}">${g.displayName}</span>
+                      <small class="text-muted truncate-text" title="${g.id || ''}">${g.id || ''}</small>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            `;
+          }
+          
+          // New section for removed identities
+          if (removedCount > 0) {
+            principalsList += `
+              <div class="mb-3">
+                <div class="mb-2 fw-bold text-danger">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i>Removed Identities (${removedCount})
+                </div>
+                <ul class="user-list mb-3">
+                  ${info.removedIdentities.map(r => `
+                    <li>
+                      <i class="bi bi-x-circle"></i> 
+                      <span class="truncate-text" title="ID: ${r.id || 'Unknown'}">ID: ${r.id || 'Unknown'}</span>
+                      <small class="text-muted truncate-text">${r.assignmentType || 'Unknown'} assignment</small>
+                      ${r.errorMessage ? `<div class="small text-danger">${r.errorMessage}</div>` : ''}
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            `;
+          }
+          
+          principalsList += '</div></div>';
+        } else {
+          principalsList = '<span class="text-muted">No principals assigned</span>';
+        }
+
+        // Format role description (truncate if too long)
+        const description = info.description || 'No description available';
+        const shortDescription = description.length > 100 
+          ? description.substring(0, 100) + '...' 
+          : description;
+        
+        // Add warning icon if there are removed identities
+        const roleNameDisplay = removedCount > 0 ? 
+          `<strong class="truncate-text" title="${info.displayName}">
+            ${info.displayName} 
+            <i class="bi bi-exclamation-triangle-fill text-danger" title="${removedCount} removed identities"></i>
+          </strong>` :
+          `<strong class="truncate-text" title="${info.displayName}">${info.displayName}</strong>`;
+          
+        // Create consistent group name variables for both checks
+        const baseActive = `${info.displayName} rbac active`.toLowerCase();
+        const baseEligible = `${info.displayName} rbac eligible`.toLowerCase();
+        
+        // Debug log to verify group existence checking
+        console.log(`Checking if groups exist for role: ${info.displayName}`);
+        console.log(`Active group name check: ${baseActive}, exists: ${existingGroups.includes(baseActive)}`);
+        console.log(`Eligible group name check: ${baseEligible}, exists: ${existingGroups.includes(baseEligible)}`);
+        
+        // Check if groups exist for button disabled state and status display
+        const activeExists = doesGroupExistForRole(info.displayName, 'active', existingGroups);
+        const eligibleExists = doesGroupExistForRole(info.displayName, 'eligible', existingGroups);
+        
+        console.log(`Group check for role "${info.displayName}": Active=${activeExists}, Eligible=${eligibleExists}`);
+        
+        // Create groups status display
+        const groupsStatusHtml = `
+          <div class="group-status">
+            <span class="status-indicator">
+              <span class="badge ${activeExists ? 'bg-success' : 'bg-secondary'} me-1">Active</span>
+              ${activeExists 
+                ? '<i class="bi bi-check-circle-fill text-success"></i>'
+                : '<i class="bi bi-circle text-muted"></i>'}
+            </span>
+            <span class="status-indicator">
+              <span class="badge ${eligibleExists ? 'bg-primary' : 'bg-secondary'} me-1">Eligible</span>
+              ${eligibleExists 
+                ? '<i class="bi bi-check-circle-fill text-primary"></i>'
+                : '<i class="bi bi-circle text-muted"></i>'}
+            </span>
+          </div>
+        `;
+
+        const actionButtonsHtml = `
+          <div class="btn-group-compact">
+            ${removedCount > 0
+              ? `<button type="button" class="azure-btn btn-danger cleanup-btn"
+                        data-role-id="${rid}">
+                 <i class="bi bi-trash"></i> Cleanup
+               </button>`
+              : ''}
+            
+            <div class="compact-section">
+              ${activeExists 
+                ? `<button type="button" class="azure-btn azure-btn-outline" disabled style="font-size: 12px;">
+                     <i class="bi bi-check-circle"></i> Active Group Exists
+                   </button>
+                   ${(info.users && info.users.filter(u => u.assignmentType === 'Active').length > 0)
+                     ? `<button type="button"
+                              class="azure-btn transfer-users-btn"
+                              data-role-id="${rid}"
+                              data-assignment-type="Active">
+                         <i class="bi bi-people"></i> Transfer to Active Group
+                       </button>`
+                     : ''}`
+                : `<button type="button"
+                          class="azure-btn create-group-btn"
+                          data-role-id="${rid}"
+                          data-assignment-type="Active">
+                     <i class="bi bi-plus-circle"></i> Active
+                   </button>`
+              }
+            </div>
+            
+            <div class="compact-section">
+              ${eligibleExists 
+                ? `<button type="button" class="azure-btn azure-btn-outline" disabled style="font-size: 12px;">
+                     <i class="bi bi-check-circle"></i> Eligible Group Exists
+                   </button>
+                   ${(info.users && info.users.filter(u => u.assignmentType === 'Eligible').length > 0)
+                     ? `<button type="button"
+                              class="azure-btn transfer-users-btn"
+                              data-role-id="${rid}"
+                              data-assignment-type="Eligible">
+                         <i class="bi bi-people"></i> Transfer to Eligible Group
+                       </button>`
+                     : ''}`
+                : `<button type="button"
+                          class="azure-btn create-group-btn"
+                          data-role-id="${rid}"
+                          data-assignment-type="Eligible">
+                     <i class="bi bi-plus-circle"></i> Eligible
+                   </button>`
+              }
+            </div>
+          </div>
+        `;
+
+        tableBody.innerHTML += `
+          <tr ${removedCount > 0 ? 'class="table-warning"' : ''} data-role-id="${rid}">
+            <td>
+              ${roleNameDisplay}
+              <div class="small text-muted">
+                ${info.type || 'Built-in Role'}
+              </div>
+            </td>
+            <td>
+              <div class="truncate-text" title="${description}">${shortDescription}</div>
+            </td>
+            <td>${principalsList}</td>
+            <td>${actionButtonsHtml}</td>
+            <td>${groupsStatusHtml}</td>
+          </tr>
+        `;
+      });
+      
+      // After rendering the table, add event listeners to the buttons
+      attachButtonEventListeners();
+    }
+    
+    // Function to display unused roles modal
+    function showUnusedRolesModal(roles) {
+      // Create modal if it doesn't exist
+      if (!document.getElementById('unusedRolesModal')) {
+        const modalHtml = `
+          <div class="modal fade" id="unusedRolesModal" tabindex="-1" aria-labelledby="unusedRolesModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="unusedRolesModalLabel">Unused Roles</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="table-responsive">
+                    <table class="azure-table">
+                      <thead>
+                        <tr>
+                          <th width="40%">Role Name</th>
+                          <th width="60%">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody id="unused-roles-table-body">
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="azure-btn azure-btn-outline" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        const modalElement = document.createElement('div');
+        modalElement.innerHTML = modalHtml;
+        document.body.appendChild(modalElement.firstElementChild);
+      }
+      
+      // Populate the modal with unused roles
+      const unusedRolesTableBody = document.getElementById('unused-roles-table-body');
+      unusedRolesTableBody.innerHTML = '';
+      
+      // Filter for unused roles
+      const unusedRoles = Object.entries(roles)
+        .filter(([rid, info]) => {
+          if (rid === '_metadata') return false;
+          
+          const hasUsers = info.users && info.users.length > 0;
+          const hasServicePrincipals = info.servicePrincipals && info.servicePrincipals.length > 0;
+          
+          return !hasUsers && !hasServicePrincipals;
+        });
+      
+      // Create rows for unused roles
+      unusedRoles.forEach(([rid, info]) => {
+        const description = info.description || 'No description available';
+        const shortDescription = description.length > 150 
+          ? description.substring(0, 150) + '...' 
+          : description;
+          
+        unusedRolesTableBody.innerHTML += `
+          <tr>
+            <td>
+              <strong class="truncate-text" title="${info.displayName}">${info.displayName}</strong>
+              <div class="small text-muted">
+                ${info.type || 'Built-in Role'}
+              </div>
+            </td>
+            <td>
+              <div class="truncate-text" title="${description}">${shortDescription}</div>
+            </td>
+          </tr>
+        `;
+      });
+      
+      // Show the modal
+      const unusedRolesModal = new bootstrap.Modal(document.getElementById('unusedRolesModal'));
+      unusedRolesModal.show();
+    }
+    
+    // Function to show toast notifications
+    function showToast(message, type = 'success') {
+      // Create toast container if it doesn't exist
+      if (!document.getElementById('toast-container')) {
+        const toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.position = 'fixed';
+        toastContainer.style.top = '20px';
+        toastContainer.style.right = '20px';
+        toastContainer.style.zIndex = '1050';
+        document.body.appendChild(toastContainer);
+      }
+      
+      // Create unique ID for this toast
+      const toastId = `toast-${Date.now()}`;
+      
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.id = toastId;
+      toast.className = `toast align-items-center border-0 ${type === 'success' ? 'bg-success' : 'bg-danger'} text-white`;
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'assertive');
+      toast.setAttribute('aria-atomic', 'true');
+      
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle'}"></i>
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      `;
+      
+      // Add toast to container
+      document.getElementById('toast-container').appendChild(toast);
+      
+      // Initialize Bootstrap toast
+      const bsToast = new bootstrap.Toast(toast, {
+        autohide: true,
+        delay: 5000
+      });
+      
+      // Show the toast
+      bsToast.show();
+      
+      // Remove from DOM after hiding
+      toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+      });
+    }
+
+    // Function to cleanup removed identities via AJAX
+    async function cleanupRemovedIdentities(roleId, event) {
+      // Prevent any default form submission or link navigation
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      
+      try {
+        console.log(`Starting cleanup for role: ${roleId}`);
+        
+        // Show loading spinner on the button
+        const button = document.querySelector(`button[data-role-id="${roleId}"]`);
+        if (button) {
+          const originalContent = button.innerHTML;
+          button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Cleaning...`;
+          button.disabled = true;
+          
+          console.log('Making API request to cleanup endpoint...');
+          
+          // Make AJAX request to cleanup endpoint
+          const response = await fetch(`/cleanup-assignments/${roleId}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+          
+          console.log(`API response status: ${response.status}`);
+          
+          if (!response.ok) {
+            console.error(`API error: ${response.status} ${response.statusText}`);
+          }
+          
+          const responseText = await response.text();
+          console.log(`API response text: ${responseText}`);
+          
+          let result;
+          try {
+            result = JSON.parse(responseText);
+            console.log('API response parsed successfully:', result);
+          } catch (parseError) {
+            console.error('Failed to parse API response as JSON:', parseError);
+            throw new Error(`Invalid JSON response: ${responseText}`);
+          }
+          
+          // Restore button state
+          button.innerHTML = originalContent;
+          button.disabled = false;
+          
+          if (result.success) {
+            console.log(`Cleanup successful: ${result.removedCount} assignments removed`);
+            // Show success message
+            showToast(result.message, 'success');
+            
+            // Update the UI - remove the identities from the role display
+            updateRoleAfterCleanup(roleId, result.removedDetails);
+          } else {
+            console.error(`Cleanup failed: ${result.message}`);
+            // Show error message
+            showToast(result.message, 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Error cleaning up removed identities:', error);
+        showToast('Failed to clean up removed identities. Please try again.', 'error');
+        
+        // Restore button state if error
+        const button = document.querySelector(`button[data-role-id="${roleId}"]`);
+        if (button) {
+          button.innerHTML = `<i class="bi bi-trash"></i> Cleanup Removed`;
+          button.disabled = false;
+        }
+      }
+      
+      // Return false to prevent any default navigation
+      return false;
+    }
+
+    // Function to update the UI after cleanup
+    function updateRoleAfterCleanup(roleId, removedDetails) {
+      // Existing code...
+      
+      // Re-render the affected role row
+      // Instead of trying to update the DOM directly, it's simpler to just re-render the entire row
+      // since we've added a new column
+      const roleRows = document.querySelectorAll(`tr[data-role-id="${roleId}"]`);
+      if (roleRows.length > 0 && role) {
+        // Get the row index to maintain position in the table
+        const rowIndex = Array.from(tableBody.children).findIndex(row => row.getAttribute('data-role-id') === roleId);
+        if (rowIndex !== -1) {
+          // Re-render just this role's row with the updated information
+          const updatedRoleInfo = [role]; 
+          const currentContent = tableBody.innerHTML;
+          renderRolesTable(allRoles);
+        }
+      }
+      
+      // Update statistics if needed
+      const stats = calculateStatistics(allRoles);
+      updateStatistics(stats);
+    }
+    
+    // Initialize the page
+    async function initializePage() {
+      try {
+        // First fetch existing groups
+        existingGroups = await fetchExistingGroups();
+        console.log(`Loaded ${existingGroups.length} existing groups`);
+        
+        // Then fetch roles data
+        allRoles = await fetchRolesData();
+        
+        if (allRoles) {
+          document.getElementById('loading-container').style.display = 'none';
+          document.getElementById('roles-container').style.display = 'block';
+          document.getElementById('show-all-roles-switch')
+            .addEventListener('change', e => {
+              showAllRoles = e.target.checked;
+              renderRolesTable(allRoles);
+            });
+          document.getElementById('show-unused-roles-btn')
+            .addEventListener('click', () => showUnusedRolesModal(allRoles));
+          document.getElementById('refresh-groups-btn')
+            .addEventListener('click', refreshExistingGroups);
+          
+          // Add event listener for the new cleanup all button
+          document.getElementById('cleanup-all-btn')
+            .addEventListener('click', cleanupAllRemovedIdentities);
+          
+          // Render table with both roles and existing groups data
+          renderRolesTable(allRoles);
+        }
+      } catch (error) {
+        console.error('Error during page initialization:', error);
+        showError('Failed to initialize the page. Please refresh or try again later.');
+      }
+    }
+    
+    // Start loading data when the page loads
+    document.addEventListener('DOMContentLoaded', initializePage);
+
+    // Add a new function to attach event listeners to buttons
+    function attachButtonEventListeners() {
+      // ...existing listeners...
+
+      // Remove-user buttons
+      document.querySelectorAll('.remove-user-btn').forEach(btn => {
+        btn.addEventListener('click', async e => {
+          e.preventDefault();
+          const roleId = btn.dataset.roleId;
+          const type = btn.dataset.assignmentType;
+          const userId = btn.dataset.userId;
+          // Przekazujemy też referencję do przycisku
+          await removeUserFromRole(roleId, type, userId, btn);
+        });
+      });
+
+      // Create-group buttons
+      document.querySelectorAll('.create-group-btn').forEach(btn => {
+        btn.addEventListener('click', async e => {
+          e.preventDefault();
+          const roleId = btn.dataset.roleId;
+          const assignmentType = btn.dataset.assignmentType;
+          await createGroup(roleId, assignmentType);
+        });
+      });
+
+      // Add event listeners for transfer-users buttons
+      document.querySelectorAll('.transfer-users-btn').forEach(btn => {
+        btn.addEventListener('click', async e => {
+          e.preventDefault();
+          const roleId = btn.dataset.roleId;
+          const assignmentType = btn.dataset.assignmentType;
+          await transferUsersToGroup(roleId, assignmentType);
+        });
+      });
+    }
+
+    // Also update the createGroup function to use the new approach
+    async function createGroup(roleId, assignmentType) {
+      const btn = document.querySelector(
+        `.create-group-btn[data-role-id="${roleId}"][data-assignment-type="${assignmentType}"]`
+      );
+      const orig = btn.innerHTML;
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> Creating...`;
+      btn.disabled = true;
+      try {
+        const res = await fetch(`/api/create-group/${roleId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assignmentType })
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+          // After creating a new group, refresh the list of existing groups
+          existingGroups = await fetchExistingGroups();
+          // Then re-render the table
+          renderRolesTable(allRoles);
+          showToast(`Group created: ${result.groupId}`, 'success');
+        } else {
+          showToast(`Error: ${result.message || res.statusText}`, 'error');
+        }
+      } catch (err) {
+        showToast(`Error: ${err.message}`, 'error');
+      } finally {
+        btn.innerHTML = orig;
+        btn.disabled = false;
+      }
+    }
+
+    // Add a function to refresh group data
+    async function refreshExistingGroups() {
+      try {
+        const refreshBtn = document.getElementById('refresh-groups-btn');
+        const originalContent = refreshBtn.innerHTML;
+        refreshBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> Refreshing...`;
+        refreshBtn.disabled = true;
+        
+        // Fetch updated group information
+        existingGroups = await fetchExistingGroups();
+        
+        // Re-render the table with the updated groups info
+        renderRolesTable(allRoles);
+        
+        showToast('Groups information refreshed', 'success');
+      } catch (error) {
+        console.error('Error refreshing group information:', error);
+        showToast('Failed to refresh groups information', 'error');
+      } finally {
+        const refreshBtn = document.getElementById('refresh-groups-btn');
+        refreshBtn.innerHTML = `<i class="bi bi-arrow-clockwise"></i> Refresh Groups`;
+        refreshBtn.disabled = false;
+      }
+    }
+
+    // New function:
+    async function removeUserFromRole(roleId, assignmentType, userId, btn) {
+      try {
+        const res = await fetch(
+          `/api/remove-user/${roleId}/${assignmentType}/${userId}`,
+          { method: 'DELETE' }
+        );
+        const result = await res.json();
+        if (res.ok && result.success) {
+          showToast('User removed successfully', 'success');
+
+          // 1. Usuń <li> z użytkownikiem
+          const li = btn.closest('li');
+          if (li) li.remove();
+
+          // 2. Jeśli w tej sekcji nie ma już żadnego <li>, usuń całą sekcję
+          const ul = btn.closest('ul.user-list');
+          if (ul && ul.children.length === 0) {
+            // upewniamy się, że wybieramy wrapper <div class="mb-3">, a nie sam ul
+            const section = ul.closest('div.mb-3');
+            if (section) section.remove();
+          }
+
+          // 3. Zaktualizuj licznik "X principals" nad listą
+          const collapseDiv = btn.closest('.collapse');
+          if (collapseDiv) {
+            const headerDiv = collapseDiv.previousElementSibling;
+            const spanCount = headerDiv?.querySelector('span');
+            if (spanCount) {
+              const [num] = spanCount.textContent.trim().split(' ');
+              const newCount = Math.max(0, parseInt(num, 10) - 1);
+              spanCount.textContent = `${newCount} principal${newCount !== 1 ? 's' : ''}`;
+
+              // 4. Jeśli licznik spadnie do 0, zastąp cały blok "No principals assigned"
+              if (newCount === 0) {
+                const td = headerDiv.parentElement;
+                if (td) {
+                  td.innerHTML = `<span class="text-muted">No principals assigned</span>`;
+                }
+              }
+            }
+          }
+
+        } else {
+          showToast(`Error: ${result.message}`, 'error');
+        }
+      } catch (err) {
+        showToast(`Error: ${err.message}`, 'error');
+      }
+    }
+
+    // Add this code to the <script> section, before the final script closing tag
+
+    // Function to transfer users to group
+    async function transferUsersToGroup(roleId, assignmentType) {
+      try {
+        const btn = document.querySelector(
+          `.transfer-users-btn[data-role-id="${roleId}"][data-assignment-type="${assignmentType}"]`
+        );
+        if (!btn) return;
+        
+        const orig = btn.innerHTML;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> Transferring...`;
+        btn.disabled = true;
+        
+        // Get role name for better UX messaging
+        const roleNameElem = document.querySelector(`tr[data-role-id="${roleId}"] strong.truncate-text`);
+        const roleName = roleNameElem ? roleNameElem.textContent.trim() : "this role";
+        
+        // Show confirmation dialog with clearer message about what's happening
+        const confirmMessage = assignmentType === "Eligible" 
+          ? `This will transfer all users with direct ${assignmentType} assignments for "${roleName}" to the corresponding group.\n\nUsers will be removed from direct role assignments (PIM eligible assignments will be properly terminated). Continue?`
+          : `This will transfer all users with direct ${assignmentType} assignments for "${roleName}" to the corresponding group.\n\nUsers will be removed from direct role assignments. Continue?`;
+        
+        if (!confirm(confirmMessage)) {
+          btn.innerHTML = orig;
+          btn.disabled = false;
+          return;
+        }
+        
+        // Make the API call
+        const response = await fetch(`/api/transfer-users/${roleId}/${assignmentType}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          // Show more detailed toast message
+          const message = result.failedCount > 0 
+            ? `${result.transferredCount} users transferred successfully, ${result.failedCount} failed` 
+            : `${result.transferredCount} users transferred successfully`;
+          
+          showToast(message, 'success');
+          
+          // Refresh the role data to update UI
+          try {
+            const refreshResponse = await fetch(`/api/role/${roleId}`);
+            const refreshData = await refreshResponse.json();
+            
+            if (refreshData.success) {
+              // Update the role in our allRoles global variable
+              allRoles[roleId] = refreshData.role;
+              // Re-render the table
+              renderRolesTable(allRoles);
+            }
+          } catch (refreshErr) {
+            console.error("Error refreshing role data:", refreshErr);
+            // Even if refresh fails, the transfer was successful
+          }
+        } else {
+          showToast(`Error: ${result.message || "Transfer failed"}`, 'error');
+          btn.innerHTML = orig;
+          btn.disabled = false;
+        }
+      } catch (err) {
+        console.error("Error transferring users:", err);
+        showToast(`Error: ${err.message}`, 'error');
+        
+        // Reset button state
+        const btn = document.querySelector(
+          `.transfer-users-btn[data-role-id="${roleId}"][data-assignment-type="${assignmentType}"]`
+        );
+        if (btn) {
+          btn.innerHTML = `<i class="bi bi-people"></i> Transfer to ${assignmentType} Group`;
+          btn.disabled = false;
+        }
+      }
+    }
+
+    // Add function to handle cleanup all removed identities
+    async function cleanupAllRemovedIdentities(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      
+      const btn = document.getElementById('cleanup-all-btn');
+      if (!btn || !btn.dataset.rolesWithRemoved) return;
+      
+      try {
+        // Parse the roles with removed identities
+        const rolesWithRemoved = JSON.parse(btn.dataset.rolesWithRemoved || '[]');
+        
+        if (rolesWithRemoved.length === 0) {
+          showToast('No removed identities to clean up', 'success');
+          return;
+        }
+        
+        // Get role names for confirmation message
+        const roleNames = rolesWithRemoved.map(r => r.displayName).join(', ');
+        const totalCount = rolesWithRemoved.reduce((sum, r) => sum + r.removedCount, 0);
+        
+        // Confirm before proceeding
+        if (!confirm(`This will remove ${totalCount} assignments for non-existent identities from ${rolesWithRemoved.length} roles:\n\n${roleNames}\n\nContinue?`)) {
+          return;
+        }
+        
+        // Show loading state
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> Cleaning...`;
+        btn.disabled = true;
+        
+        // Process each role with removed identities
+        let totalRemoved = 0;
+        let failedRoles = [];
+        
+        // Process roles sequentially to avoid overloading the API
+        for (const roleInfo of rolesWithRemoved) {
+          try {
+            const response = await fetch(`/cleanup-assignments/${roleInfo.roleId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            });
+            
+            if (!response.ok) {
+              failedRoles.push(roleInfo.displayName);
+              continue;
+            }
+            
+            const result = await response.json();
+            if (result.success) {
+              totalRemoved += result.removedCount;
+            } else {
+              failedRoles.push(roleInfo.displayName);
+            }
+          } catch (error) {
+            console.error(`Error cleaning up role ${roleInfo.displayName}:`, error);
+            failedRoles.push(roleInfo.displayName);
+          }
+        }
+        
+        // Refresh the roles data to update the UI
+        allRoles = await fetchRolesData();
+        renderRolesTable(allRoles);
+        
+        // Show completion toast
+        if (failedRoles.length === 0) {
+          showToast(`Successfully removed ${totalRemoved} invalid assignments from ${rolesWithRemoved.length} roles`, 'success');
+        } else {
+          showToast(`Removed ${totalRemoved} assignments, but failed for roles: ${failedRoles.join(', ')}`, 'error');
+        }
+      } catch (error) {
+        console.error('Error in cleanup all:', error);
+        showToast(`Error: ${error.message}`, 'error');
+      } finally {
+        // Restore button state
+        const btn = document.getElementById('cleanup-all-btn');
+        if (btn) {
+          btn.innerHTML = `<i class="bi bi-trash"></i> Clean Up All`;
+          btn.disabled = false;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
