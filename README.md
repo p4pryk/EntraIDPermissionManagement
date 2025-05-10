@@ -75,16 +75,3 @@ The single-page UI in `index.html` provides an intuitive management interface.
 | `/api/existing-groups`                                   | GET    | Returns RBAC groups in the directory            |
 | `/health`                                                | GET    | Health check endpoint                           |
 
-## Azure Security Best Practices
-
-The application implements numerous Azure security best practices:
-
-* Centralized credential management via `azure.identity`
-* Token management with proper caching and refresh mechanisms
-* Least-privilege access with minimum required scopes
-* Careful error handling and logging
-* API pagination support for large directories
-* Group-based access control instead of direct assignments
-* PIM adoption for just-in-time privileged access
-
-> **Note:** In production environments, you should use **Managed Identities** instead of client secrets for enhanced security.
