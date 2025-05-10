@@ -1,37 +1,50 @@
 # Entra ID Permission Management Tool
 
-This tool helps administrators implement group-based RBAC (Role-Based Access Control) and PIM (Privileged Identity Management) for Entra ID by providing:
+This tool helps administrators implement security best practices for Entra ID permissions by providing:
 
-- A web UI built with [Flask](https://flask.palletsprojects.com/) and Bootstrap  
-- Full Graph API integration via [`app.py`](app.py) and [`TokenManager`](app.py#L18)  
-- Centralized credential handling with [`azure.identity.ClientSecretCredential`](app.py#L10)  
-- Pagination, error handling, and minimum-scope token requests
+- Group-based RBAC (Role-Based Access Control) implementation  
+- PIM (Privileged Identity Management) adoption tracking and facilitation  
+- Identification and cleanup of stale identity permissions  
+- User-friendly web interface for role management operations  
+![image](https://github.com/user-attachments/assets/3373defe-e30b-4cbc-b95f-4fa16c5a5b8d)
 
-  ![image](https://github.com/user-attachments/assets/4c690b00-c21a-420f-b38e-56838c356f91)
 
+## Key Features
 
-## Features
+### Role Assignment Visibility
 
-### Role Visibility  
-- View all role definitions and assignments (users, groups, service principals)  
-- Identify unused roles and removed (stale) identities  
-- Track Active vs. Eligible (PIM) assignments  
+- View all directory role definitions with filtering options  
+- Track Active vs. Eligible (PIM) assignments at a glance  
+- Identify unused roles and stale identities  
+- See detailed breakdown of all role assignment types (users, groups, service principals)  
 
-### Group-Based Access Management  
-- Create security groups per role/assignment type ([`/api/create-group/<role_id>`](app.py#L354))  
-- Bulk transfer direct assignments to RBAC groups ([`/api/transfer-users/<role_id>/<assignment_type>`](app.py#L697))  
-- Display group member lists via [`get_group_members`](app.py#L942)  
+### Group-Based Access Management
 
-### Cleanup Tools  
-- Detect and remove assignments for deleted principals ([`/cleanup-assignments/<role_id>`](app.py#L436))  
-- “Clean Up All” removed identities from the UI  
+- Create role-specific security groups with appropriate naming convention  
+- Transfer individual user permissions to centrally managed groups  
+- Analyze group membership with detailed member lists  
+- Implement both Active and Eligible (PIM) group assignments  
+
+### Security Cleanup Tools
+
+- Detect and remove assignments for deleted principals  
+- Bulk clean-up of all stale identity assignments  
+- Individual user permission removal from within the interface  
+- Detailed error handling and status reporting  
 
 ## Requirements
 
 - Python 3.8+  
-- Microsoft Entra ID tenant & App Registration  
-- [.env](.env) populated with `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`  
-- See [requirements.txt](requirements.txt) for Python dependencies  
+- Microsoft Entra ID tenant with Global Admin or Privileged Role Admin access  
+- App Registration with appropriate Microsoft Graph API permissions:  
+  - `RoleManagement.Read.Directory`  
+  - `RoleManagement.ReadWrite.Directory`  
+  - `Directory.Read.All`  
+  - `PrivilegedAccess.Read.AzureAD` (for PIM functionality)  
+- Environment variables in `.env` file:
+  - `AZURE_TENANT_ID`  
+  - `AZURE_CLIENT_ID`  
+  - `AZURE_CLIENT_SECRET`  
 
 ## Setup & Installation
 
@@ -39,59 +52,40 @@ This tool helps administrators implement group-based RBAC (Role-Based Access Con
 git clone https://github.com/yourusername/EntraIdPermissionAutomation.git
 cd EntraIdPermissionAutomation
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env   # then fill in your credentials
-```
+cp .env.example .env  # Then edit with your credentials
+````
 
 ## Running the Application
 
-```bash
-python app.py
-```
-
-By default it listens on `http://0.0.0.0:5000/`. The single‐page UI is in [templates/index.html](templates/index.html).
+The application will be available at [http://localhost:5000/](http://localhost:5000/).
+The single-page UI in `index.html` provides an intuitive management interface.
 
 ## API Reference
 
-- **GET** `/api/roles`  
-  Returns all roles and enriched assignment data.  
-- **GET** `/api/role/<role_id>`  
-  Returns a single role’s data.  
-- **POST** `/api/create-group/<role_id>`  
-  Creates or returns an RBAC group.  
-- **POST** `/api/transfer-users/<role_id>/<assignment_type>`  
-  Moves direct assignments to a group.  
-- **POST** `/cleanup-assignments/<role_id>`  
-  Deletes stale role assignments.  
-- **DELETE** `/api/remove-user/<role_id>/<assignment_type>/<user_id>`  
-  Removes an individual user assignment.  
-- **GET** `/health`  
-  Health check endpoint.  
+| Endpoint                                                 | Method | Description                                     |
+| -------------------------------------------------------- | ------ | ----------------------------------------------- |
+| `/api/roles`                                             | GET    | Returns all roles with enriched assignment data |
+| `/api/role/<role_id>`                                    | GET    | Returns data for a single role                  |
+| `/api/create-group/<role_id>`                            | POST   | Creates an RBAC group for a role                |
+| `/api/transfer-users/<role_id>/<assignment_type>`        | POST   | Transfers direct assignments to a group         |
+| `/api/remove-user/<role_id>/<assignment_type>/<user_id>` | DELETE | Removes an individual assignment                |
+| `/cleanup-assignments/<role_id>`                         | POST   | Removes stale assignments                       |
+| `/api/existing-groups`                                   | GET    | Returns RBAC groups in the directory            |
+| `/health`                                                | GET    | Health check endpoint                           |
 
-All request handling is in [`app.py`](app.py).
+## Azure Security Best Practices
 
-## Azure Best Practices
+The application implements numerous Azure security best practices:
 
-- Centralize credential management ([`get_credential`](app.py#L8))  
-- Use Managed Identity in production instead of client secret  
-- Request only minimum scopes (`"https://graph.microsoft.com/.default"`)  
-- Implement token caching & refresh buffer (`TokenManager.get_token`)  
-- Handle pagination via `@odata.nextLink` in [`make_graph_request`](app.py#L25)
+* Centralized credential management via `azure.identity`
+* Token management with proper caching and refresh mechanisms
+* Least-privilege access with minimum required scopes
+* Careful error handling and logging
+* API pagination support for large directories
+* Group-based access control instead of direct assignments
+* PIM adoption for just-in-time privileged access
 
-> For more guidance, you can invoke the Azure best practices analyzer:  
-> ```bash
-> azure_development-get_best_practices --tool
-> ```
-
-## Contributing
-
-1. Fork the repo  
-2. Create a feature branch  
-3. Submit a pull request  
-
-Please follow the coding style in [`app.py`](app.py) and add tests where applicable.
-
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+> **Note:** In production environments, you should use **Managed Identities** instead of client secrets for enhanced security.
+```
