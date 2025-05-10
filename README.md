@@ -88,4 +88,3 @@ The application implements numerous Azure security best practices:
 * PIM adoption for just-in-time privileged access
 
 > **Note:** In production environments, you should use **Managed Identities** instead of client secrets for enhanced security.
-```
